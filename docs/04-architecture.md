@@ -130,7 +130,7 @@ erDiagram
 
 | Table | Key columns |
 |---|---|
-| `users` | id, display_name, username, avatar_url, country, default_currency (`LKR`), time_zone (`Asia/Colombo`), plan |
+| `users` | id, display_name, username, avatar_url, country, default_currency (`LKR`), time_zone (`Asia/Colombo`), plan, is_super_admin |
 | `friendships` | user_id, friend_id, status (pending, accepted), created_at |
 | `trips` | id, owner_id, name, destinations (text array), start_date, end_date, days, base_currency, stage (planning, active, settling, closed, cancelled), settle_mode (minimal, per_expense), cover_url, drive_folder_id |
 | `trip_members` | id, trip_id, user_id (null for a guest), guest_name, role (owner, co_admin, member), joined_at, left_at |
@@ -147,6 +147,8 @@ erDiagram
 | `reminders` | from_member_id, to_member_id, trip_id, sent_at (used for the 24-hour limit) |
 | `subscriptions` *(P2)* | user_id, provider (payhere, paddle), provider_ref, plan, status, current_period_end |
 | `drive_connections` *(P2)* | user_id, encrypted_refresh_token, connected_at |
+| `plan_settings` *(P2)* | plan (free, pro), max_active_trips, max_members_per_trip, max_visible_history (null = unlimited), features (JSON), limits_enabled, prices (JSON per currency and period), updated_by, updated_at |
+| `admin_audit_log` *(P2)* | id, admin_id, setting, before (JSON), after (JSON), reason, at |
 | `reviews` *(P2)* | id, trip_id, member_id, target (trip or place), place_name, place_type, rating, note |
 
 **Rules in the data layer**
@@ -179,7 +181,7 @@ PDFs are rendered on the server by route handlers using `@react-pdf/renderer`, f
 
 ### Billing (Phase 2)
 
-A `BillingProvider` interface (`createCheckout`, `handleWebhook`, `cancel`, `getPortalUrl`) has two adapters: PayHere and Paddle. Sri Lankan users see PayHere by default. Webhooks are verified (PayHere's MD5 signature using the merchant secret, and Paddle's signature header), processed idempotently, and update the `subscriptions` table. Feature checks read one function, `getEntitlements(user, trip)`, so plan limits live in one place.
+A `BillingProvider` interface (`createCheckout`, `handleWebhook`, `cancel`, `getPortalUrl`) has two adapters: PayHere and Paddle. Sri Lankan users see PayHere by default. Webhooks are verified (PayHere's MD5 signature using the merchant secret, and Paddle's signature header), processed idempotently, and update the `subscriptions` table. Feature checks read one function, `getEntitlements(user, trip)`, so plan limits live in one place. Entitlements read the `plan_settings` table (cached for up to a minute), which super admins edit in the `/admin` console, so limits and prices change without a redeploy.
 
 ## 6. Security and privacy
 

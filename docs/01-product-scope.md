@@ -35,7 +35,7 @@ Most trip planners stop at the itinerary, and most expense splitters start after
 | Release | Contents | Target |
 |---|---|---|
 | **MVP (Release 1)** | Accounts and social login, friends, trips with invite links and guests, budget planner with PDF, expenses with flexible splits, minimal-transfer settlement, mark-paid and reminders, notifications with controls, basic dashboard and search, installable PWA with offline expense entry, account deletion and data export | End of Sprint 8 (2027-04-09) |
-| **Phase 2 (Release 2)** | Pro billing (PayHere and Paddle), Google Drive integration, receipt photos, multi-currency UI, advanced analytics, group feedback and ratings | End of Sprint 12 (2027-06-04) |
+| **Phase 2 (Release 2)** | Pro billing (PayHere and Paddle), super admin console for plan settings, Google Drive integration, receipt photos, multi-currency UI, advanced analytics, group feedback and ratings | End of Sprint 12 (2027-06-04) |
 | **Later (Phase 3+)** | Native app wrappers (Android and iOS), Sinhala and Tamil UI, public reviews, receipt OCR, expenses with several payers, recurring trips and templates | Not scheduled |
 
 During the MVP beta, every user gets all MVP features free. Free plan limits are built and tested in the MVP but switched on only when Pro billing launches in Phase 2.
@@ -254,6 +254,26 @@ Scoped down to what helps most, while keeping Google's API review light:
 - Feedback is optional and **private to the trip group** in this phase.
 - Public reviews need moderation and are **Later**.
 
+### 3.15 Super admin console (P2)
+
+A protected admin area for the Wayfund team (platform level, separate from trip roles). A super admin can:
+
+- **Change plan settings** without a code change or redeploy:
+  - Free: number of active trips, members per trip, past trips kept visible.
+  - Pro: members per trip and any other caps.
+  - Which features belong to Free and which to Pro (for example, move multi-currency to Free).
+  - Turn plan limits on or off for everyone (they stay off during the MVP beta).
+- **Change Pro prices** per currency (LKR, USD) and per billing period, and the Trip Pass price. New prices apply to new subscriptions; existing subscribers keep their price until renewal, matching what the payment providers support.
+- **Manage a user's plan:** grant complimentary Pro, extend a subscription, or reset to Free, for example for beta testers or support cases.
+- **See basic platform numbers:** users, trips, active subscriptions.
+
+Rules:
+
+- Super admins are set by the Wayfund team only (a flag on the account, not something users can request). Admin pages need a recent sign-in.
+- Every change is recorded in an **admin audit log** (who, what, old value, new value, when).
+- Lowering a limit never deletes data. Users above the new limit keep what they have, read only where needed, exactly like a downgrade.
+- Super admins manage plans and settings. They **cannot** read trip expenses or personal trip details from the console, to protect user privacy.
+
 ## 4. Free and Pro plans
 
 | | **Free** | **Pro** |
@@ -272,6 +292,7 @@ Scoped down to what helps most, while keeping Google's API review light:
 
 **Rules**
 
+- All numbers in this table are **defaults**. A super admin can change them at any time from the admin console (section 3.15).
 - Limits apply to the **trip owner's** plan. Joining someone else's trip never uses up a member's own limit, and members of a Pro owner's trip get the Pro trip features in that trip.
 - Downgrading never deletes data. Extra trips become read only until the user is within the limit again.
 - **Indicative pricing, to be validated with users:** LKR 790 per month or LKR 6,900 per year in Sri Lanka, and USD 3.99 per month or USD 29.99 per year elsewhere. A one-off **Trip Pass** (Pro for a single trip) is worth testing.

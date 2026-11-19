@@ -66,10 +66,10 @@ gantt
     Beta buffer (fixes only)    :b1, 2027-03-15, 12d
     S8 Launch                   :crit, s8, 2027-03-29, 12d
     section Phase 2
-    S9 Billing and currency     :s9, 2027-04-12, 12d
-    S10 Payments and Drive      :s10, 2027-04-26, 12d
-    S11 Drive and feedback      :s11, 2027-05-10, 12d
-    S12 Analytics and release   :crit, s12, 2027-05-24, 12d
+    S9 Billing and admin        :s9, 2027-04-12, 12d
+    S10 Worldwide and currency  :s10, 2027-04-26, 12d
+    S11 Drive and receipts      :s11, 2027-05-10, 12d
+    S12 Feedback and release    :crit, s12, 2027-05-24, 12d
 ```
 
 | Sprint | Dates | Sprint goal | Points |
@@ -84,10 +84,10 @@ gantt
 | S7 | 2027-03-01 to 2027-03-12 | It works without signal and produces the final reports | 33 |
 | Beta | 2027-03-15 to 2027-03-26 | Real groups use the Sprint 7 build, bug fixes only | n/a |
 | S8 | 2027-03-29 to 2027-04-09 | **MVP public launch** | 33 (+6 stretch) |
-| S9 | 2027-04-12 to 2027-04-23 | Pro is for sale in Sri Lanka, and trips abroad work | 31 |
-| S10 | 2027-04-26 to 2027-05-07 | Pro is for sale worldwide, and Drive is connected | 29 |
-| S11 | 2027-05-10 to 2027-05-21 | Photos, receipts and group feedback live in the trip | 29 |
-| S12 | 2027-05-24 to 2027-06-04 | **Phase 2 release** with advanced analytics | 21 |
+| S9 | 2027-04-12 to 2027-04-23 | Pro is for sale in Sri Lanka, and plan limits are managed from the admin console | 31 |
+| S10 | 2027-04-26 to 2027-05-07 | Pro is for sale worldwide, and trips abroad work | 31 |
+| S11 | 2027-05-10 to 2027-05-21 | Photos and receipts live in the trip's Drive folder | 29 |
+| S12 | 2027-05-24 to 2027-06-04 | **Phase 2 release** with group feedback and advanced analytics | 29 (+11 stretch) |
 
 The **beta buffer** between Sprint 7 and Sprint 8 is two weeks where real groups use the Sprint 7 build and only bug fixes are made. It gives the MVP launch real-world feedback before the final sprint.
 
@@ -267,9 +267,9 @@ Start the Google and Facebook verification requests (E11-4) at the **start of th
 
 **Release:** MVP live on the production domain, announced to the beta groups.
 
-### Sprint 9: Billing and currency (2027-04-12 to 2027-04-23)
+### Sprint 9: Billing in Sri Lanka and admin settings (2027-04-12 to 2027-04-23)
 
-**Goal:** Pro is for sale in Sri Lanka, and trips abroad work. *Sinhala and Tamil New Year: reduced capacity.*
+**Goal:** Pro is for sale in Sri Lanka, and plan limits are managed from the admin console. *Sinhala and Tamil New Year: reduced capacity.*
 
 | ID | Story | Pts |
 |---|---|---:|
@@ -277,52 +277,56 @@ Start the Google and Facebook verification requests (E11-4) at the **start of th
 | E12-2 | PayHere subscriptions (LKR) | 8 |
 | E12-5 | Pricing page and upgrade prompts | 3 |
 | E14-8 | Google OAuth verification for Drive | 5 |
-| E13-1 | Expenses in other currencies | 5 |
-| E13-2 | Exchange rates, suggested and editable | 5 |
+| E17-1 | Super admin area | 3 |
+| E17-2 | Edit plan limits | 5 |
+| E17-4 | Admin audit log | 2 |
 
-E14-8 is early on purpose: Google's review of the Drive scope must finish before Drive features ship in Sprints 10 and 11.
+E14-8 is early on purpose: Google's review of the Drive scope must finish before Drive features ship in Sprint 11. E17-2 lands with E12-1 so limits are never hard-coded.
 
-### Sprint 10: Payments and Drive (2027-04-26 to 2027-05-07)
+### Sprint 10: Worldwide billing and multi-currency (2027-04-26 to 2027-05-07)
 
-**Goal:** Pro is for sale worldwide, and Drive is connected.
+**Goal:** Pro is for sale worldwide, and trips abroad work.
 
 | ID | Story | Pts |
 |---|---|---:|
 | E12-3 | Paddle subscriptions | 8 |
 | E12-4 | Manage subscription | 5 |
+| E13-1 | Expenses in other currencies | 5 |
+| E13-2 | Exchange rates, suggested and editable | 5 |
 | E13-3 | Base-currency balances with originals shown | 3 |
-| E13-4 | Currencies in PDFs and analytics | 3 |
-| E14-1 | Connect Google Drive | 5 |
-| E14-2 | Create or pick the trip folder | 5 |
+| E17-3 | Admin: Pro prices and feature mapping | 5 |
 
-### Sprint 11: Photos, receipts and feedback (2027-05-10 to 2027-05-21)
+### Sprint 11: Google Drive, photos and receipts (2027-05-10 to 2027-05-21)
 
-**Goal:** Photos, receipts and group feedback live in the trip.
+**Goal:** Photos and receipts live in the trip's Drive folder.
 
 | ID | Story | Pts |
 |---|---|---:|
+| E14-1 | Connect Google Drive | 5 |
+| E14-2 | Create or pick the trip folder | 5 |
 | E14-3 | Open Drive folder | 1 |
 | E14-4 | Upload photos | 5 |
 | E14-5 | Gallery | 5 |
-| E14-6 | Sub-folders | 3 |
 | E14-7 | Receipt photos on expenses | 5 |
-| E15-1 | Rate the trip | 2 |
-| E15-2 | Rate places | 5 |
-| E15-3 | Group ratings view | 3 |
+| E17-5 | Admin: grant, extend or reset a user's plan | 3 |
 
-### Sprint 12: Analytics and Phase 2 release (2027-05-24 to 2027-06-04)
+### Sprint 12: Feedback, analytics and Phase 2 release (2027-05-24 to 2027-06-04)
 
-**Goal:** Phase 2 release with advanced analytics.
+**Goal:** Phase 2 release with group feedback and advanced analytics.
 
 | ID | Story | Pts |
 |---|---|---:|
+| E14-6 | Drive sub-folders | 3 |
+| E15-1 | Rate the trip | 2 |
+| E15-2 | Rate places | 5 |
+| E15-3 | Group ratings view | 3 |
 | E16-1 | Trends across trips | 5 |
 | E16-2 | Analytics filters | 5 |
 | E16-3 | Budget accuracy | 3 |
-| E16-4 | CSV export | 3 |
-| E12-6 | Trip Pass | 5 |
-
-The lighter load leaves room for Phase 2 bug fixes and a release-readiness pass.
+| E13-4 | Currencies in PDFs and analytics | 3 |
+| *Stretch* E16-4 | Analytics CSV export | 3 |
+| *Stretch* E12-6 | Trip Pass | 5 |
+| *Stretch* E17-6 | Admin platform numbers | 3 |
 
 ## 5. Risks and mitigations
 

@@ -34,8 +34,9 @@ When work starts, each story becomes a GitHub issue labelled with its epic, rele
 | E14 | Google Drive and receipts | P2 | 34 |
 | E15 | Feedback and ratings | P2 | 10 |
 | E16 | Advanced analytics | P2 | 16 |
-| **Phase 2 total** | | | **110** |
-| E17 | Later ideas | Later | not sized |
+| E17 | Super admin console | P2 | 21 |
+| **Phase 2 total** | | | **131** |
+| E18 | Later ideas | Later | not sized |
 
 ---
 
@@ -315,7 +316,7 @@ When work starts, each story becomes a GitHub issue labelled with its epic, rele
 
 **Acceptance criteria**
 
-- **E12-1:** Limits from the scope's plans table are checked on the server when creating trips, adding members and using Pro features. Hitting a limit shows an upgrade prompt, not an error. Downgrading never deletes data, and extra trips become read only. Limits are read from configuration so they can be tuned.
+- **E12-1:** Limits from the scope's plans table are checked on the server when creating trips, adding members and using Pro features. Hitting a limit shows an upgrade prompt, not an error. Downgrading never deletes data, and extra trips become read only. Limits are read from the plan settings that super admins manage (E17-2), not hard-coded.
 - **E12-2:** Checkout through PayHere's recurring payments in LKR. The payment notification is verified with the merchant secret before Pro is turned on. Renewals and failures update the subscription. Failed payments give a 7-day grace period with reminders.
 - **E12-3:** Checkout through Paddle in USD (with local pricing where Paddle offers it). Webhooks are verified and processed idempotently. Paddle handles invoices and tax.
 - **E12-4:** The billing page shows plan, provider, next renewal date and invoices or receipts. Cancelling keeps Pro until the end of the paid period.
@@ -326,10 +327,10 @@ When work starts, each story becomes a GitHub issue labelled with its epic, rele
 
 | ID | Story | Pts | Priority | Sprint |
 |---|---|---:|---|---|
-| E13-1 | As a Pro trip member, I want to enter an expense in another currency so that foreign spending is recorded as paid | 5 | Must | S9 |
-| E13-2 | As a member, I want exchange rates suggested and editable so that conversions match what we actually paid | 5 | Must | S9 |
+| E13-1 | As a Pro trip member, I want to enter an expense in another currency so that foreign spending is recorded as paid | 5 | Must | S10 |
+| E13-2 | As a member, I want exchange rates suggested and editable so that conversions match what we actually paid | 5 | Must | S10 |
 | E13-3 | As a member, I want balances in the base currency with original amounts visible so that settlement stays simple | 3 | Must | S10 |
-| E13-4 | As a member, I want PDFs and analytics to show both currencies so that reports are complete | 3 | Should | S10 |
+| E13-4 | As a member, I want PDFs and analytics to show both currencies so that reports are complete | 3 | Should | S12 |
 
 **Acceptance criteria**
 
@@ -342,12 +343,12 @@ When work starts, each story becomes a GitHub issue labelled with its epic, rele
 
 | ID | Story | Pts | Priority | Sprint |
 |---|---|---:|---|---|
-| E14-1 | As a Pro owner, I want to connect Google Drive so that the trip can use my Drive for photos | 5 | Must | S10 |
-| E14-2 | As a Pro owner, I want Wayfund to create a trip folder, or let me pick an existing one, so that photos are organised | 5 | Must | S10 |
+| E14-1 | As a Pro owner, I want to connect Google Drive so that the trip can use my Drive for photos | 5 | Must | S11 |
+| E14-2 | As a Pro owner, I want Wayfund to create a trip folder, or let me pick an existing one, so that photos are organised | 5 | Must | S11 |
 | E14-3 | As a member, I want to open the trip's Drive folder in one tap so that I can reach our photos | 1 | Must | S11 |
 | E14-4 | As a member, I want to upload photos to the trip folder from the app so that sharing photos is easy | 5 | Must | S11 |
 | E14-5 | As a member, I want a gallery of the trip folder's images so that we can relive the trip in the app | 5 | Must | S11 |
-| E14-6 | As a member, I want to create sub-folders from the app so that photos stay organised by day or place | 3 | Should | S11 |
+| E14-6 | As a member, I want to create sub-folders from the app so that photos stay organised by day or place | 3 | Should | S12 |
 | E14-7 | As a Pro member, I want to attach a receipt photo to an expense so that we have proof of spending | 5 | Must | S11 |
 | E14-8 | As the developer, I want Google's OAuth verification for the Drive scope completed so that all users can connect | 5 | Must | S9 |
 
@@ -366,9 +367,9 @@ When work starts, each story becomes a GitHub issue labelled with its epic, rele
 
 | ID | Story | Pts | Priority | Sprint |
 |---|---|---:|---|---|
-| E15-1 | As a member, I want to rate the trip overall so that the group can remember how it went | 2 | Must | S11 |
-| E15-2 | As a member, I want to rate and review places such as hotels and restaurants so that we remember good and bad spots | 5 | Must | S11 |
-| E15-3 | As a member, I want to see the group's ratings together so that we can compare opinions | 3 | Should | S11 |
+| E15-1 | As a member, I want to rate the trip overall so that the group can remember how it went | 2 | Must | S12 |
+| E15-2 | As a member, I want to rate and review places such as hotels and restaurants so that we remember good and bad spots | 5 | Must | S12 |
+| E15-3 | As a member, I want to see the group's ratings together so that we can compare opinions | 3 | Should | S12 |
 
 **Acceptance criteria**
 
@@ -392,7 +393,27 @@ When work starts, each story becomes a GitHub issue labelled with its epic, rele
 - **E16-3:** For each trip, planned vs actual per category with the percentage difference.
 - **E16-4:** CSV of trips, categories and my share, using the current filters.
 
-## E17. Later ideas (not sized)
+## E17. Super admin console (Phase 2)
+
+| ID | Story | Pts | Priority | Sprint |
+|---|---|---:|---|---|
+| E17-1 | As the Wayfund team, I want a protected super admin area so that only we can change platform settings | 3 | Must | S9 |
+| E17-2 | As a super admin, I want to change plan limits (trips, members, history) so that I can tune Free and Pro without a release | 5 | Must | S9 |
+| E17-3 | As a super admin, I want to change Pro prices and which features are Pro so that I can adjust the offer | 5 | Must | S10 |
+| E17-4 | As a super admin, I want every admin change logged so that changes are traceable | 2 | Must | S9 |
+| E17-5 | As a super admin, I want to grant, extend or reset a user's plan so that I can support beta testers and customers | 3 | Should | S11 |
+| E17-6 | As a super admin, I want basic platform numbers so that I can see how Wayfund is growing | 3 | Could | S12 |
+
+**Acceptance criteria**
+
+- **E17-1:** Only accounts flagged as super admin (set in the database by the team) can open `/admin`. Others get a 404. Admin pages ask for a fresh sign-in if the last one was over 12 hours ago. Every admin action is checked on the server.
+- **E17-2:** A settings form shows, for Free and Pro: active trips, members per trip and visible past trips (a blank value means unlimited), plus a switch to turn limits on or off for everyone. Values are validated (whole numbers, at least 1). Saving takes effect within a minute without a redeploy. A confirmation shows how many users are over the new limit. Lowering a limit never deletes data.
+- **E17-3:** A super admin can set the Pro monthly, yearly and Trip Pass prices for LKR and USD, and tick which features are Free or Pro. Price changes apply to new checkouts and are synced to PayHere and Paddle where their APIs allow (otherwise the form shows the manual step). Existing subscribers keep their price until renewal.
+- **E17-4:** Each change records admin, setting, old value, new value and time. The log can be viewed and filtered in the console and can't be edited.
+- **E17-5:** Search users by email or username, see their plan and subscription status, grant complimentary Pro with an end date, extend, or reset to Free, with a required reason. The user gets a notification.
+- **E17-6:** A dashboard shows total users, new users this week, trips created, active Pro subscriptions by provider. It shows counts only, never trip contents.
+
+## E18. Later ideas (not sized)
 
 - Native Android and iOS wrappers (Capacitor or a similar tool), including Sign in with Apple.
 - Sinhala and Tamil user interface.

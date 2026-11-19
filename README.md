@@ -15,6 +15,7 @@ Wayfund is a mobile-first trip planner and group expense splitter. A group of fr
 - **Everyone included:** friends without the app join as guests and can claim their place later.
 - **Local first:** LKR is the default currency, and PayHere is supported for Pro subscriptions in Sri Lanka.
 - **Pro plan (Phase 2):** unlimited trips, Google Drive photo folders and receipts, multi-currency, advanced analytics and branded PDFs.
+- **Super admin console (Phase 2):** the Wayfund team can change Free and Pro limits, prices and features without a release.
 
 ## Documentation
 
@@ -30,7 +31,7 @@ Wayfund is a mobile-first trip planner and group expense splitter. A group of fr
 | Release | Sprints | Target |
 |---|---|---|
 | MVP (public launch) | S0 to S8, with a 2-week beta | 2027-04-09 |
-| Phase 2 (Pro, Drive, multi-currency, analytics) | S9 to S12 | 2027-06-04 |
+| Phase 2 (Pro, admin console, Drive, multi-currency, analytics) | S9 to S12 | 2027-06-04 |
 
 ## Tech stack
 
