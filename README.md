@@ -25,6 +25,7 @@ Wayfund is a mobile-first trip planner and group expense splitter. A group of fr
 | [Product backlog](docs/02-backlog.md) | Epics and user stories with acceptance criteria, story points and planned sprints |
 | [Sprint plan](docs/03-sprint-plan.md) | 2-week sprints, ceremonies, Definition of Ready and Done, roadmap, risks |
 | [Architecture and tech stack](docs/04-architecture.md) | Stack, system overview, data model, key flows, security |
+| [Deployment options and costs](docs/05-deployment-costs.md) | Hosting options compared by monthly cost, with a recommendation |
 
 ## Roadmap
 
