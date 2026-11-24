@@ -96,7 +96,56 @@ Why:
 - Generate PDFs on demand and keep them for a short time, rather than storing every version.
 - Only upgrade Supabase compute when the database dashboard shows sustained high CPU or memory use.
 
-## 5. Sources
+## 5. Follow-up: Cloudflare Free, Neon, and DigitalOcean
+
+### Can Cloudflare Workers Free run Wayfund in production?
+
+Not reliably. The Free plan allows only **10 ms of CPU per request** and 100,000 requests per day. Server-rendered Next.js pages often need more than 10 ms, and PDF generation needs far more. Requests over the limit fail with an error. Workers Paid ($5/month) raises this to 30 seconds per request by default. The Free plan is fine for development previews and for a static landing page.
+
+### Neon's paid plan
+
+Neon has no plan called "Pro". Its paid plans are **Launch** (no base fee, $0.106 per compute hour, $0.35/GB storage) and **Scale** (about twice the compute rate). For Wayfund, **Launch** is the right choice and should cost about **$5–15/month** at launch, because the database sleeps when nobody is using it. The Free plan does not pause projects or delete data, so it is fine for development.
+
+Moving from Supabase to Neon means three things need replacing:
+
+| Supabase feature | Replacement with Neon |
+|---|---|
+| Auth | Neon Auth (included on Launch) or Better Auth / Auth.js |
+| Realtime | Refresh the trip screen every few seconds for the MVP, or add a realtime service later |
+| File storage (PDFs, exports) | Cloudflare R2 (10 GB free, no egress fees) |
+
+This adds roughly one sprint of work.
+
+### DigitalOcean prices (checked 2026-11-24)
+
+| Product | Price |
+|---|---|
+| App Platform, 512 MB container | $5/month (likely too small for Next.js with PDFs) |
+| App Platform, 1 GB container | $10–12/month, 100–150 GB bandwidth |
+| App Platform, 2 GB container | $25/month |
+| Basic Droplet (VPS), 1 GB / 2 GB | $6 / $12 per month, plus 20–30% for backups |
+| Managed PostgreSQL (smallest) | $15.15/month |
+
+DigitalOcean has Bangalore and Singapore datacenters, both close to Sri Lanka.
+
+### Cloudflare + Neon vs DigitalOcean + Neon
+
+| | **Cloudflare Workers Paid + Neon Launch** | **DigitalOcean App Platform + Neon Launch** |
+|---|---|---|
+| Development cost | $0–5/month | $0–12/month |
+| Launch cost | **about $10–20/month** (about LKR 3,000–6,000) | **about $17–27/month** (about LKR 5,000–8,000) |
+| Growth cost | about $20–40/month | about $30–50/month (bigger container) |
+| How Next.js runs | Through the OpenNext adapter. Most features work, and a few may not. | A normal Node.js server, so everything works. |
+| Limits | 30 s CPU per request (enough). 128 MB memory per request. | None beyond the container size. |
+| PDFs | Needs testing on Workers | Works as on a laptop |
+| Bandwidth | Free | 100–150 GB included, then $0.02/GB |
+| Region | Global edge, close to every user | One region. Choose Singapore, the same as Neon, to keep the app and database close. |
+| Server upkeep | None | None on App Platform (a Droplet would need upkeep) |
+| Main risk | Adapter limits | Slightly higher cost |
+
+**Recommendation:** start with **Cloudflare Workers Paid + Neon Launch**, which is the cheapest managed setup. If the Sprint 0 check shows the adapter can't handle our PDFs or server features, use **DigitalOcean App Platform (1 GB) + Neon Launch** instead. Both use the same code, Neon database and R2 storage, so switching costs very little.
+
+## 6. Sources
 
 - Vercel: [pricing](https://vercel.com/pricing), [terms (Hobby is non-commercial)](https://vercel.com/legal/terms), [fair-use guidelines](https://vercel.com/docs/limits/fair-use-guidelines)
 - Cloudflare: [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/), [Workers limits](https://developers.cloudflare.com/workers/platform/limits/)
@@ -104,4 +153,5 @@ Why:
 - Neon: [pricing](https://neon.com/pricing)
 - Railway: [pricing plans](https://docs.railway.com/pricing/plans)
 - Render (secondary): [Render vs Railway, Encore, Nov 2026](https://encore.dev/articles/render-vs-railway)
+- DigitalOcean: [App Platform pricing](https://docs.digitalocean.com/products/app-platform/details/pricing/), [Droplet pricing](https://www.digitalocean.com/pricing/droplets), [Managed database pricing](https://www.digitalocean.com/pricing/managed-databases)
 - Hetzner (secondary): [Hetzner pricing 2026, AgentDeals](https://agentdeals.dev/hetzner-pricing-2026)
