@@ -35,7 +35,7 @@ jobs:
             type=sha,format=long
             type=raw,value=main
       - name: Build and push app image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           target: runner
@@ -50,7 +50,7 @@ jobs:
           secrets: |
             sentry_auth_token=${{ secrets.SENTRY_AUTH_TOKEN }}
       - name: Build and push migration image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           target: migrator
