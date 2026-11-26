@@ -83,7 +83,7 @@ gantt
 | S6 | 2027-02-15 to 2027-02-26 | Everyone stays informed without the noise | 34 |
 | S7 | 2027-03-01 to 2027-03-12 | It works without signal and produces the final reports | 33 |
 | Beta | 2027-03-15 to 2027-03-26 | Real groups use the Sprint 7 build, bug fixes only | n/a |
-| S8 | 2027-03-29 to 2027-04-09 | **MVP public launch** | 33 (+6 stretch) |
+| S8 | 2027-03-29 to 2027-04-09 | **MVP public launch** | 38 (+6 stretch) |
 | S9 | 2027-04-12 to 2027-04-23 | Pro is for sale in Sri Lanka, and plan limits are managed from the admin console | 31 |
 | S10 | 2027-04-26 to 2027-05-07 | Pro is for sale worldwide, and trips abroad work | 31 |
 | S11 | 2027-05-10 to 2027-05-21 | Photos and receipts live in the trip's Drive folder | 29 |
@@ -101,7 +101,7 @@ The **beta buffer** between Sprint 7 and Sprint 8 is two weeks where real groups
 |---|---|---:|
 | E0-1 | Project scaffold (Next.js, TypeScript, Tailwind, shadcn/ui) | 3 |
 | E0-2 | CI pipeline on GitHub Actions | 3 |
-| E0-3 | Preview and production environments | 3 |
+| E0-3 | Docker setup and free test environments (Neon Free, Cloudflare Tunnel) | 3 |
 | E0-4 | Database schema, migrations and row-level security | 5 |
 | E0-5 | Design system and base components | 5 |
 | E0-6 | Error tracking and product analytics | 2 |
@@ -235,9 +235,11 @@ The split engine is built here, ahead of the expense screens, so it's fully test
 | E3-5 | Guests claim their place | 5 |
 | E6-7 | Full trip settlement PDF | 5 |
 | E6-8 | Personal statement PDF | 3 |
-| E8-3 | Trip spending charts | 5 |
+| E11-6 | Production VPS with Docker, Caddy and backups | 5 |
 
-**Demo:** in airplane mode, add three expenses, reconnect, and watch them sync without duplicates. Then share the final trip PDF.
+**Demo:** in airplane mode, add three expenses, reconnect, and watch them sync without duplicates. Then share the final trip PDF from the production VPS.
+
+Buy the VPS at the start of this sprint (see [deployment options and costs](05-deployment-costs.md)). Until then, development uses only free plans.
 
 ### Beta buffer (2027-03-15 to 2027-03-26)
 
@@ -258,6 +260,7 @@ The Sprint 7 build goes to at least five real groups (E11-1 starts here). Only b
 | E11-2 | Performance and accessibility pass | 5 |
 | E11-3 | Landing page | 3 |
 | E11-4 | Google and Facebook app verification | 2 |
+| E8-3 | Trip spending charts | 5 |
 | E11-5 | In-app feedback | 2 |
 | *Stretch* E6-10 | Settle per expense option | 3 |
 | *Stretch* E2-6 | Friend suggestions | 2 |
@@ -340,6 +343,9 @@ E14-8 is early on purpose: Google's review of the Drive scope must finish before
 | Rounding errors in splits | Users lose trust | Integer minor units, largest-remainder rounding, property-based tests (E5-1). |
 | Payment provider eligibility | Pro launch delayed | Confirm PayHere and Paddle merchant accounts during Sprint 7. |
 | Holiday seasons | Lower capacity in Sprints 2 and 9 | Lighter commitments noted in those sprints. |
+| Sprint 8 is over the planned velocity (38 points) | Launch slips | E11-5 and E8-3 move to just after launch if needed. |
+| Single VPS fails | Wayfund is down, data at risk | Nightly off-site backups to R2 with monthly restore tests, provider's weekly backups, uptime alerts. |
+| Code works on Cloudflare previews but not on the VPS (or the reverse) | Surprises at deploy | Treat the Docker image as the source of truth and test heavy features (PDFs) in Docker before merging. |
 
 ## 6. Tracking progress
 

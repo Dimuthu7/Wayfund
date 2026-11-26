@@ -36,7 +36,9 @@ Wayfund is a mobile-first trip planner and group expense splitter. A group of fr
 
 ## Tech stack
 
-Next.js (TypeScript) PWA · Tailwind CSS and shadcn/ui · Postgres on Supabase with Drizzle ORM · Supabase Auth (Google, Facebook, email link) · server-side PDFs with `@react-pdf/renderer` · Web Push and Resend · PayHere and Paddle · hosted on Vercel.
+Next.js (TypeScript) PWA · Tailwind CSS and shadcn/ui · PostgreSQL with Drizzle ORM · Auth.js (Google, Facebook, email link) · server-side PDFs with `@react-pdf/renderer` · Cloudflare R2 storage · Web Push and Resend · PayHere and Paddle.
+
+**Hosting:** free plans during development (Neon Free, Cloudflare Workers Free and a Cloudflare Tunnel), then one VPS running Docker Compose (app, Postgres, Caddy, backups) from the beta onward. See [deployment options and costs](docs/05-deployment-costs.md).
 
 ## Getting started
 

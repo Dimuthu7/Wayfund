@@ -27,8 +27,8 @@ When work starts, each story becomes a GitHub issue labelled with its epic, rele
 | E8 | Dashboard, search and basic analytics | MVP | 19 |
 | E9 | PWA and offline | MVP | 18 |
 | E10 | Privacy and account management | MVP | 10 |
-| E11 | Launch readiness | MVP | 15 |
-| **MVP total** | | | **273** |
+| E11 | Launch readiness | MVP | 20 |
+| **MVP total** | | | **278** |
 | E12 | Plans and Pro billing | P2 | 34 |
 | E13 | Multi-currency | P2 | 16 |
 | E14 | Google Drive and receipts | P2 | 34 |
@@ -46,7 +46,7 @@ When work starts, each story becomes a GitHub issue labelled with its epic, rele
 |---|---|---:|---|---|
 | E0-1 | As the developer, I want the project scaffolded so that I can build features from day one | 3 | Must | S0 |
 | E0-2 | As the developer, I want a CI pipeline so that every pull request is checked automatically | 3 | Must | S0 |
-| E0-3 | As the developer, I want preview and production environments so that I can test before releasing | 3 | Must | S0 |
+| E0-3 | As the developer, I want a Docker setup and free test environments so that I can test on a phone before releasing | 3 | Must | S0 |
 | E0-4 | As the developer, I want the database schema and migrations set up so that data changes are versioned | 5 | Must | S0 |
 | E0-5 | As a user, I want a consistent, attractive design system so that the app feels modern and easy | 5 | Must | S0 |
 | E0-6 | As the developer, I want error tracking and product analytics so that I can see problems and usage | 2 | Must | S0 |
@@ -55,7 +55,7 @@ When work starts, each story becomes a GitHub issue labelled with its epic, rele
 
 - **E0-1:** Next.js (App Router, TypeScript strict), Tailwind CSS and shadcn/ui are set up. ESLint and Prettier run on commit. `pnpm dev` starts the app locally with a README on how.
 - **E0-2:** GitHub Actions runs lint, type check, unit tests and build on every pull request. A failed check blocks merging.
-- **E0-3:** Each pull request gets a preview deployment. Merging to `main` deploys to production. Secrets live in the hosting provider, never in the repository.
+- **E0-3:** `docker compose up` runs the app, Postgres and MinIO locally with the same image used in production. CI builds and publishes the Docker image on every merge to `main`. A Neon Free database and a Cloudflare Tunnel (plus optional Cloudflare Workers Free previews) let the app be tested on a phone over HTTPS. Secrets are kept in `.env` files and GitHub secrets, never in the repository.
 - **E0-4:** Postgres schema for the core tables from the [architecture note](04-architecture.md) is created through migrations. Row-level security is on for every trip table. A seed script creates demo data.
 - **E0-5:** Colour palette, typography, spacing and light and dark themes are defined as tokens. Base components exist: button, input, amount input, avatar, card, bottom sheet, bottom navigation, toast and empty state. Layout is designed for 360 px first.
 - **E0-6:** Errors in the browser and server are reported to an error tracker. Key product events (sign up, trip created, expense added, payment marked) are recorded.
@@ -241,7 +241,7 @@ When work starts, each story becomes a GitHub issue labelled with its epic, rele
 |---|---|---:|---|---|
 | E8-1 | As a user, I want a home dashboard so that I see my active trip, balances and recent activity at a glance | 5 | Must | S6 |
 | E8-2 | As a user, I want to search trips by name, destination and dates so that I can find any trip | 3 | Must | S8 |
-| E8-3 | As a member, I want a trip's spending by category and by member so that I understand where the money went | 5 | Must | S7 |
+| E8-3 | As a member, I want a trip's spending by category and by member so that I understand where the money went | 5 | Must | S8 |
 | E8-4 | As a user, I want my trip spending by month and year so that I see how much I spend on travel | 5 | Must | S8 |
 | E8-5 | As a member, I want a trip summary card when a trip ends so that the group can see the result | 1 | Could | S8 |
 
@@ -292,6 +292,7 @@ When work starts, each story becomes a GitHub issue labelled with its epic, rele
 | E11-3 | As the product owner, I want a simple landing page so that people understand Wayfund and sign up | 3 | Must | S8 |
 | E11-4 | As the developer, I want Google and Facebook app verification done so that sign-in works for everyone | 2 | Must | S8 |
 | E11-5 | As a user, I want to send feedback or report a bug from the app so that problems reach the team | 2 | Should | S8 |
+| E11-6 | As the developer, I want production running on a VPS with Docker and automatic backups so that the beta and launch are reliable | 5 | Must | S7 |
 
 **Acceptance criteria**
 
@@ -300,6 +301,7 @@ When work starts, each story becomes a GitHub issue labelled with its epic, rele
 - **E11-3:** A landing page with the value proposition, three feature highlights, screenshots and sign-in buttons. It meets basic SEO needs (title, description, Open Graph image).
 - **E11-4:** The Google OAuth consent screen is verified and the Facebook app is live, with privacy policy and data deletion URLs set.
 - **E11-5:** A "Send feedback" item in settings sends text and an optional screenshot, along with app version and device details.
+- **E11-6:** A VPS (at least 2 vCPU and 4 GB RAM, in Asia if offered) runs the app, Postgres, Caddy, a cron container and a backup container through Docker Compose. HTTPS works on the production domain. Merging to `main` deploys a new image with a short health check. A nightly encrypted `pg_dump` goes to a separate R2 bucket and is kept 30 days, and a test restore succeeds. The firewall allows only ports 80 and 443 and key-only SSH. An uptime monitor alerts on downtime. A staging database exists for checking releases.
 
 ---
 
