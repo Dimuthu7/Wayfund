@@ -17,7 +17,7 @@ A short note on how Wayfund will be built. It covers the stack, the main compone
 | **ORM and migrations** | Drizzle ORM and drizzle-kit | Type-safe SQL, plain SQL migrations, works with any Postgres |
 | **Auth** | **Auth.js** (NextAuth v5) with the Drizzle adapter: Google, Facebook, and email magic link (sent through Resend) | Open source, stores sessions in our own Postgres, no vendor lock-in |
 | **Live updates** | Polling: the open trip screen refreshes every 5–10 seconds and when the app comes back into focus | Simple, works on every host. Server-Sent Events can be added later on the VPS. |
-| **File storage** | **Cloudflare R2** through the S3 API (MinIO container for local development) | 10 GB free and no egress fees. Holds generated PDFs, data exports and database backups. |
+| **File storage** | **Cloudflare R2** through the S3 API (a SeaweedFS container for local development, since MinIO no longer publishes images) | 10 GB free and no egress fees. Holds generated PDFs, data exports and database backups. |
 | **PDF generation** | **Server-side** with `@react-pdf/renderer` | Consistent PDFs on every phone, no headless browser needed |
 | **Background jobs** | Protected `/api/cron/*` routes called on a schedule: a cron container on the VPS, or a GitHub Actions schedule during development | Lifecycle changes by date, daily digests, data export jobs |
 | **Push notifications** | Web Push (VAPID) | Works on Android and on iOS 16.4 and later for installed PWAs |
@@ -151,9 +151,9 @@ erDiagram
 
 **Rules in the data layer**
 
-- All money is stored as `bigint` minor units with an ISO 4217 currency code. No floating point numbers anywhere in money paths.
+- All money is stored as `bigint` minor units with an ISO 4217 currency code. No floating point numbers anywhere in money paths. In TypeScript amounts are integer `number`s (safe up to 9 × 10¹⁵ minor units), checked with `Number.isSafeInteger`, so they serialise to JSON for offline sync.
 - Balances are **calculated** from expenses, shares and payments, never stored as a column that could drift. A database view (`member_balances`) does the calculation.
-- Row-level security in plain Postgres: each request runs in a transaction that sets `app.user_id` (`SET LOCAL`), and policies allow a user to read or write trip data only if they are an active member of that trip. Role checks (owner, co-admin) are in policies **and** in server actions. This works the same on Neon and on the VPS.
+- Row-level security in plain Postgres: each request runs in a transaction that sets `app.user_id` and switches to the restricted `wayfund_app` role (`SET LOCAL ROLE`), and policies allow a user to read or write trip data only if they are an active member of that trip. `wayfund_app` has no `BYPASSRLS` and can't read emails, OAuth tokens or sessions. Role checks (owner, co-admin) are in policies **and** in server actions. This works the same on Neon and on the VPS with one connection string. See [ADR 0003](adr/0003-row-level-security.md).
 - Soft deletes for expenses (`deleted_at`) so they can be restored and audited.
 
 ## 5. Key flows
@@ -202,12 +202,14 @@ A `BillingProvider` interface (`createCheckout`, `handleWebhook`, `cancel`, `get
 
 **VPS sizing:** 2 vCPU or more and at least 4 GB RAM (for example Hostinger KVM 1 or KVM 2), in a data centre in Asia (India, Malaysia or Singapore) if the provider offers one. Buy it at the start of Sprint 7. Production starts with a fresh database, and test data from Neon is moved only if needed (`pg_dump` and `pg_restore`).
 
-## 8. Decisions to record as ADRs when building starts
+## 8. Architecture Decision Records
 
-1. Free plans for development, one VPS with Docker for beta and production; plain Postgres, Auth.js and R2 instead of Supabase.
-2. Integer minor units and largest-remainder rounding for money.
-3. Server-side PDFs with `@react-pdf/renderer` rather than a headless browser.
-4. Device-made UUIDs and upsert for offline sync.
-5. Polling for live updates in the MVP.
-6. `drive.file` scope only for Google Drive.
-7. PayHere and Paddle behind one billing interface.
+Recorded so far in [`docs/adr/`](adr/): [0001 hosting](adr/0001-hosting-free-tiers-then-vps.md), [0002 money](adr/0002-money-integer-minor-units.md), [0003 row-level security](adr/0003-row-level-security.md), [0004 auth and account linking](adr/0004-authjs-database-sessions-and-linking.md), [0005 Next.js 16 with Cache Components](adr/0005-nextjs-16-cache-components.md).
+
+Still to record when the related work starts:
+
+1. Server-side PDFs with `@react-pdf/renderer` rather than a headless browser.
+2. Device-made UUIDs and upsert for offline sync.
+3. Polling for live updates in the MVP.
+4. `drive.file` scope only for Google Drive.
+5. PayHere and Paddle behind one billing interface.
