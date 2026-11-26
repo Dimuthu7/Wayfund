@@ -4,40 +4,43 @@ A short note on how Wayfund will be built. It covers the stack, the main compone
 
 ## 1. Tech stack
 
+**Hosting decision (2026-11-26):** develop and test on **free plans** (Cloudflare Workers Free and Neon Free), then run the beta and production on **one VPS with Docker**, with both the app and the Postgres database in containers. See [deployment options and costs](05-deployment-costs.md) for the comparison behind this.
+
 | Layer | Choice | Why |
 |---|---|---|
-| **App framework** | **Next.js** (App Router) with **TypeScript** (strict) | One codebase for UI and server, server components for fast first load, route handlers and server actions for the API |
+| **App framework** | **Next.js** (App Router) with **TypeScript** (strict), built as a `standalone` Node.js server | One codebase for UI and server. The standalone build runs in a small Docker image. |
 | **UI** | **Tailwind CSS** and **shadcn/ui** (Radix primitives) | Fast mobile-first styling, accessible components we own and can restyle |
 | **Charts** | Recharts | Simple, works with server-rendered pages |
 | **PWA** | Web app manifest and a service worker (Serwist) | Installable app, offline cache, background sync |
 | **Offline storage** | IndexedDB (through Dexie) | Device-side cache of trips and the offline expense queue |
-| **Database** | **Postgres on Supabase** (recommended), or Neon | See the decision below |
+| **Database** | **PostgreSQL 17**: Neon Free during development, a Postgres container on the VPS for beta and production | Plain Postgres everywhere, so moving between them is a dump and restore |
 | **ORM and migrations** | Drizzle ORM and drizzle-kit | Type-safe SQL, plain SQL migrations, works with any Postgres |
-| **Auth** | Supabase Auth (Google, Facebook, email magic link) | Social login built in, issues the user ID that row-level security uses |
-| **Realtime** | Supabase Realtime | Live updates to expenses and balances while the group is together |
-| **PDF generation** | **Server-side** with `@react-pdf/renderer` | Consistent PDFs on every phone, no headless browser needed, runs in serverless functions |
-| **Background jobs** | Supabase scheduled functions (pg_cron) or Vercel Cron | Lifecycle changes by date, daily digests, data export jobs |
+| **Auth** | **Auth.js** (NextAuth v5) with the Drizzle adapter: Google, Facebook, and email magic link (sent through Resend) | Open source, stores sessions in our own Postgres, no vendor lock-in |
+| **Live updates** | Polling: the open trip screen refreshes every 5–10 seconds and when the app comes back into focus | Simple, works on every host. Server-Sent Events can be added later on the VPS. |
+| **File storage** | **Cloudflare R2** through the S3 API (MinIO container for local development) | 10 GB free and no egress fees. Holds generated PDFs, data exports and database backups. |
+| **PDF generation** | **Server-side** with `@react-pdf/renderer` | Consistent PDFs on every phone, no headless browser needed |
+| **Background jobs** | Protected `/api/cron/*` routes called on a schedule: a cron container on the VPS, or a GitHub Actions schedule during development | Lifecycle changes by date, daily digests, data export jobs |
 | **Push notifications** | Web Push (VAPID) | Works on Android and on iOS 16.4 and later for installed PWAs |
-| **Email** | Resend (with React Email templates) | Simple API, good deliverability |
+| **Email** | Resend (with React Email templates) | Simple API, free plan covers development and beta |
 | **Payments (Phase 2)** | **PayHere** (LKR) and **Paddle** (international) | Local payment methods in Sri Lanka, and merchant of record for global tax |
 | **Google Drive (Phase 2)** | Google Drive API with the `drive.file` scope and Google Picker | Least access, avoids the restricted-scope security assessment |
-| **Hosting** | Vercel (app) and Supabase (database, auth, realtime) | Preview deployments per pull request, low ops work |
-| **Monitoring** | Sentry (errors) and PostHog (product analytics) | Free tiers cover the MVP |
+| **Reverse proxy** | Caddy | Automatic HTTPS certificates, simple config |
+| **Deployment** | Docker image built by GitHub Actions, pushed to GitHub Container Registry, pulled by Docker Compose on the VPS (Coolify is an optional dashboard on top) | The server never builds, so it needs little memory |
+| **Monitoring** | Sentry (errors), PostHog (product analytics), a free uptime monitor | Free tiers cover the MVP |
 | **Testing** | Vitest and fast-check (unit and property-based), Playwright (end-to-end on a mobile viewport) | Money logic needs strong tests |
 | **CI/CD** | GitHub Actions | Lint, type check, test and build on every pull request |
 
-### Decision: Supabase vs Neon
+### Why not Supabase
 
-| | Supabase | Neon |
-|---|---|---|
-| Postgres | ✅ | ✅ |
-| Auth with Google and Facebook | ✅ built in | ❌ need Auth.js or a similar library |
-| Row-level security tied to the signed-in user | ✅ built in | Possible, but more wiring |
-| Realtime updates | ✅ built in | ❌ need another service |
-| File storage | ✅ (for exports and generated PDFs) | ❌ |
-| Database branching for previews | ✅ (paid plan) | ✅ excellent, free |
+Supabase was the first recommendation because it bundles auth, realtime and storage. It was dropped because production will be self-hosted on a VPS: using plain Postgres, Auth.js and R2 from day one means the same code runs in development and production, with no service to migrate away from later.
 
-**Recommendation: Supabase.** It covers auth, realtime, storage and row-level security in one place, which means fewer services for a small team. Drizzle keeps the data layer portable, so moving to Neon later (with Auth.js) stays possible. Choose a Supabase region close to Sri Lanka, such as Mumbai (`ap-south-1`) or Singapore (`ap-southeast-1`).
+### Running on Cloudflare Workers Free during development
+
+Cloudflare Workers Free allows only **10 ms of CPU per request**. Simple pages fit, but PDF generation and some heavier pages will fail there even though they work on the VPS. Workers also runs Next.js through the OpenNext adapter rather than as a Node.js server. So:
+
+- Treat Cloudflare as a convenient shared preview link, not as proof that a feature works.
+- Test PDFs and anything heavy on the laptop in Docker (the same image as production). Share it with a phone through a free **Cloudflare Tunnel**, which also gives the HTTPS that push notifications and installing the app need.
+- Avoid code that only works on one runtime. If something can't run on Workers, it's fine as long as it works in the Docker image.
 
 ## 2. System overview
 
@@ -51,33 +54,28 @@ flowchart LR
         SW <--> IDB
     end
 
-    subgraph Vercel
-        RSC[Server components<br/>and server actions]
-        API[Route handlers<br/>sync, webhooks, PDFs]
-        CRON[Cron jobs<br/>lifecycle, digests]
+    subgraph VPS["VPS (Docker Compose)"]
+        CADDY[Caddy<br/>HTTPS]
+        APP[Next.js server<br/>pages, server actions,<br/>sync API, PDFs, Auth.js]
+        DB[(PostgreSQL<br/>with row-level security)]
+        CRON[Cron container<br/>lifecycle, digests]
+        BAK[Backup container<br/>nightly pg_dump]
+        CADDY --> APP
+        APP --> DB
+        CRON --> APP
+        BAK --> DB
     end
 
-    subgraph Supabase
-        AUTH[Auth]
-        DB[(Postgres<br/>with row-level security)]
-        RT[Realtime]
-        ST[Storage<br/>exports, PDFs]
-    end
+    UI --> CADDY
+    SW --> CADDY
 
-    UI --> RSC
-    SW --> API
-    RSC --> DB
-    API --> DB
-    CRON --> DB
-    UI --> AUTH
-    RT --> UI
-    DB --> RT
-    API --> ST
-
-    API --> PUSH[Web Push]
-    API --> MAIL[Resend email]
-    API <--> PAY[PayHere and Paddle]
-    API <--> GD[Google Drive API]
+    APP --> R2[(Cloudflare R2<br/>PDFs, exports)]
+    BAK --> R2B[(Cloudflare R2<br/>backups bucket)]
+    APP --> PUSH[Web Push]
+    APP --> MAIL[Resend email]
+    APP <--> OAUTH[Google and Facebook OAuth]
+    APP <--> PAY[PayHere and Paddle]
+    APP <--> GD[Google Drive API]
 ```
 
 ## 3. Code structure (planned)
@@ -155,7 +153,7 @@ erDiagram
 
 - All money is stored as `bigint` minor units with an ISO 4217 currency code. No floating point numbers anywhere in money paths.
 - Balances are **calculated** from expenses, shares and payments, never stored as a column that could drift. A database view (`member_balances`) does the calculation.
-- Row-level security: a user can read or write trip data only if they are an active member of that trip. Role checks (owner, co-admin) are in policies **and** in server actions.
+- Row-level security in plain Postgres: each request runs in a transaction that sets `app.user_id` (`SET LOCAL`), and policies allow a user to read or write trip data only if they are an active member of that trip. Role checks (owner, co-admin) are in policies **and** in server actions. This works the same on Neon and on the VPS.
 - Soft deletes for expenses (`deleted_at`) so they can be restored and audited.
 
 ## 5. Key flows
@@ -165,7 +163,7 @@ erDiagram
 1. The phone creates the expense with a UUID and calculates the shares with the same split engine the server uses.
 2. It's saved to IndexedDB and shown straight away (optimistic UI).
 3. The sync client sends queued expenses in order to `POST /api/sync/expenses`. The server checks permissions, validates the split again with the engine, and saves it with an **upsert by UUID**, so a retry never duplicates.
-4. The server writes history, sends notifications, and Realtime pushes the change to other members' open screens.
+4. The server writes history and sends notifications. Other members' open trip screens pick up the change on their next refresh (every 5–10 seconds).
 5. Conflicts (the same expense edited on two devices) are settled by `updated_at`, with the newer edit winning, and both versions kept in history.
 
 ### Settlement
@@ -177,7 +175,7 @@ erDiagram
 
 ### PDFs
 
-PDFs are rendered on the server by route handlers using `@react-pdf/renderer`, from the same data and engines as the app. They're streamed for download, and saved to Supabase Storage with a signed, time-limited URL when shared by link. Fonts are bundled so LKR amounts and names render the same everywhere, and adding Sinhala and Tamil fonts later is straightforward.
+PDFs are rendered on the server by route handlers using `@react-pdf/renderer`, from the same data and engines as the app. They're streamed for download, and saved to Cloudflare R2 with a signed, time-limited URL when shared by link. Fonts are bundled so LKR amounts and names render the same everywhere, and adding Sinhala and Tamil fonts later is straightforward.
 
 ### Billing (Phase 2)
 
@@ -186,25 +184,30 @@ A `BillingProvider` interface (`createCheckout`, `handleWebhook`, `cancel`, `get
 ## 6. Security and privacy
 
 - OAuth and magic link only, so no passwords are stored.
-- Secrets live in Vercel and Supabase environment settings, never in the repository.
+- Secrets live in an `.env` file on the VPS (readable only by the deploy user) and in GitHub Actions secrets, never in the repository.
 - Invite and share links use 128-bit random tokens, can be revoked, and are rate limited.
 - Google Drive refresh tokens are encrypted at rest.
 - Account deletion and data export as described in the [scope](01-product-scope.md#311-privacy-security-and-account-mvp-free).
-- Daily database backups with point-in-time recovery on the paid Supabase plan before public launch.
+- **Backups:** a backup container runs `pg_dump` every night, compresses and encrypts it, and uploads it to a separate R2 bucket, keeping 30 days. A restore into a scratch database is tested once a month. The hosting provider's weekly VPS backup is a second layer.
+- **Server hardening:** automatic security updates, a firewall allowing only ports 80 and 443 (plus SSH from a key only), Postgres not exposed outside Docker, and containers running as non-root users.
 
 ## 7. Environments
 
-| Environment | Branch | Database | Purpose |
-|---|---|---|---|
-| Local | any | Supabase CLI (local Docker) | Development |
-| Preview | pull requests | Shared staging project with seed data | Review and demos on a phone |
-| Production | `main` | Production project | Real users |
+| Environment | When | App | Database | Purpose |
+|---|---|---|---|---|
+| **Local** | Always | Laptop, `docker compose up` (same image as production) | Postgres container, or a Neon Free branch | Development |
+| **Shared test** | Sprint 0 to Sprint 6 | Laptop through Cloudflare Tunnel, and Cloudflare Workers Free for quick preview links | Neon Free | Testing on phones, demos |
+| **Staging** | Sprint 7 onward | VPS, separate Compose project | Separate `wayfund_staging` database on the same Postgres | Checking a release before production |
+| **Production** | Sprint 7 onward (set up from 2027-03-01, real users from the beta on 2027-03-15) | VPS, Docker Compose behind Caddy | Postgres container on the VPS | Real users |
+
+**VPS sizing:** 2 vCPU or more and at least 4 GB RAM (for example Hostinger KVM 1 or KVM 2), in a data centre in Asia (India, Malaysia or Singapore) if the provider offers one. Buy it at the start of Sprint 7. Production starts with a fresh database, and test data from Neon is moved only if needed (`pg_dump` and `pg_restore`).
 
 ## 8. Decisions to record as ADRs when building starts
 
-1. Supabase over Neon (above).
+1. Free plans for development, one VPS with Docker for beta and production; plain Postgres, Auth.js and R2 instead of Supabase.
 2. Integer minor units and largest-remainder rounding for money.
 3. Server-side PDFs with `@react-pdf/renderer` rather than a headless browser.
 4. Device-made UUIDs and upsert for offline sync.
-5. `drive.file` scope only for Google Drive.
-6. PayHere and Paddle behind one billing interface.
+5. Polling for live updates in the MVP.
+6. `drive.file` scope only for Google Drive.
+7. PayHere and Paddle behind one billing interface.
